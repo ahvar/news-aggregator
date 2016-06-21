@@ -91,72 +91,65 @@ APP.Main = (function() {
 
   function onStoryClick(details) {
 
-    var storyDetails = $('sd-' + details.id);
-
     // Wait a little time then show the story details.
-    setTimeout(showStory.bind(this, details.id), 60);
+    setTimeout(showStory, 60);
 
     // Create and append the story. A visual change...
     // perhaps that should be in a requestAnimationFrame?
-    // And maybe, since they're all the same, I don't
-    // need to make a new element every single time? I mean,
-    // it inflates the DOM and I can only see one at once.
-    if (!storyDetails) {
 
-      if (details.url)
-        details.urlobj = new URL(details.url);
+    if (details.url)
+      details.urlobj = new URL(details.url);
 
-      var comment;
-      var commentsElement;
-      var storyHeader;
-      var storyContent;
+    var commentsElement;
+    var storyHeader;
+    var storyContent;
 
-      var storyDetailsHtml = storyDetailsTemplate(details);
-      var kids = details.kids;
-      var commentHtml = storyDetailsCommentTemplate({
-        by: '', text: 'Loading comment...'
-      });
+    var storyDetailsHtml = storyDetailsTemplate(details);
+    var kids = details.kids;
+    storyDetails.innerHTML = storyDetailsHtml;
 
-      storyDetails = document.createElement('section');
-      storyDetails.setAttribute('id', 'sd-' + details.id);
-      storyDetails.classList.add('story-details');
-      storyDetails.innerHTML = storyDetailsHtml;
+    commentsElement = storyDetails.querySelector('.js-comments');
+    storyHeader = storyDetails.querySelector('.js-header');
+    storyContent = storyDetails.querySelector('.js-content');
 
-      document.body.appendChild(storyDetails);
+    var closeButton = storyDetails.querySelector('.js-close');
+    closeButton.addEventListener('click', hideStory);
 
-      commentsElement = storyDetails.querySelector('.js-comments');
-      storyHeader = storyDetails.querySelector('.js-header');
-      storyContent = storyDetails.querySelector('.js-content');
+    var headerHeight = storyHeader.getBoundingClientRect().height;
+    storyContent.style.paddingTop = headerHeight + 'px';
 
-      var closeButton = storyDetails.querySelector('.js-close');
-      closeButton.addEventListener('click', hideStory.bind(this, details.id));
+    if (typeof kids === 'undefined')
+      return;
 
-      var headerHeight = storyHeader.getBoundingClientRect().height;
-      storyContent.style.paddingTop = headerHeight + 'px';
+    var commentTemplateElement = document.createElement('aside');
+    commentTemplateElement.classList.add('story-details__comment');
+    commentTemplateElement.innerHTML = commentTemplateHtml;
 
-      if (typeof kids === 'undefined')
-        return;
+    for (var k = 0; k < kids.length; k++) {
 
-      for (var k = 0; k < kids.length; k++) {
+      var comment = commentTemplateElement.cloneNode(true);
+      comment.setAttribute('id', 'sdc-' + kids[k]);
 
-        comment = document.createElement('aside');
-        comment.setAttribute('id', 'sdc-' + kids[k]);
-        comment.classList.add('story-details__comment');
-        comment.innerHTML = commentHtml;
-        commentsElement.appendChild(comment);
+      requestAnimationFrame(function(commentsElement, comment){
+        return function(){commentsElement.appendChild(comment);};
+      }(commentsElement, comment));
 
-        // Update the comment with the live data.
-        APP.Data.getStoryComment(kids[k], function(commentDetails) {
+      // Update the comment with the live data.
+      APP.Data.getStoryComment(kids[k], function(comment){
+        return function(commentDetails) {
 
-          commentDetails.time *= 1000;
+        commentDetails.time *= 1000;
 
-          var comment = commentsElement.querySelector(
-              '#sdc-' + commentDetails.id);
-          comment.innerHTML = storyDetailsCommentTemplate(
-              commentDetails,
-              localeData);
+        var commentInnerHTML = storyDetailsCommentTemplate(
+            commentDetails,
+            localeData
+          );
+
+        requestAnimationFrame(function(){
+          comment.innerHTML = commentInnerHTML;
         });
-      }
+      };}(comment));
+
     }
 
   }
