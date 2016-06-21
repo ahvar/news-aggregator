@@ -146,13 +146,15 @@ APP.Main = (function() {
         commentsElement.appendChild(comment);
 
         if(window.Worker) {
-          var worker = new Worker('data.js');
-          worker.postMessage(APP.Data.getStoryComment(kids[k], function(commentDetails) {   //Update the comment with the live data.
+          var worker = new Worker('worker.js');
+          worker.postMessage(kids[k]);APP.data.getStoryComment(kids[k], function(commentDetails) {   //Update the comment with the live data.
             commentDetails.time *= 1000;
-
             var comment = commentsElement.querySelector('#sdc-' + commentDetails.id);
             comment.innerHTML = storyDetailsCommentTemplate(commentDetails, localeData);
           }));
+          worker.onmessage = function(e) {
+
+          }
         }
       } 
     }
