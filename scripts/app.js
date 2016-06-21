@@ -145,20 +145,17 @@ APP.Main = (function() {
         comment.innerHTML = commentHtml;
         commentsElement.appendChild(comment);
 
-        // Update the comment with the live data.
-        APP.Data.getStoryComment(kids[k], function(commentDetails) {
+        if(window.Worker) {
+          var worker = new Worker('data.js');
+          worker.postMessage(APP.Data.getStoryComment(kids[k], function(commentDetails) {   //Update the comment with the live data.
+            commentDetails.time *= 1000;
 
-          commentDetails.time *= 1000;
-
-          var comment = commentsElement.querySelector(
-              '#sdc-' + commentDetails.id);
-          comment.innerHTML = storyDetailsCommentTemplate(
-              commentDetails,
-              localeData);
-        });
-      }
+            var comment = commentsElement.querySelector('#sdc-' + commentDetails.id);
+            comment.innerHTML = storyDetailsCommentTemplate(commentDetails, localeData);
+          }));
+        }
+      } 
     }
-
   }
 
   function showStory(id) {

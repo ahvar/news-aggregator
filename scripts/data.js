@@ -18,7 +18,6 @@ APP.Data = (function() {
 
   var HN_API_BASE = 'https://hacker-news.firebaseio.com';
   var HN_TOPSTORIES_URL = HN_API_BASE + '/v0/topstories.json';
-  var HN_STORYDETAILS_URL = HN_API_BASE + '/v0/item/[ID].json';
 
   function getTopStories(callback) {
     request(HN_TOPSTORIES_URL, function(evt) {
@@ -31,15 +30,6 @@ APP.Data = (function() {
     var storyURL = HN_STORYDETAILS_URL.replace(/\[ID\]/, id);
 
     request(storyURL, function(evt) {
-      callback(evt.target.response);
-    });
-  }
-
-  function getStoryComment(id, callback) {
-
-    var storyCommentURL = HN_STORYDETAILS_URL.replace(/\[ID\]/, id);
-
-    request(storyCommentURL, function(evt) {
       callback(evt.target.response);
     });
   }
